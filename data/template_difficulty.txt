@@ -1,0 +1,219 @@
+medication	has there been a prior |treatment|	Easy
+medication	Has this patient ever been prescribed |medication|	Easy
+medication	Has the pt. ever been on |medication| before	Easy
+medication	|medication|	Easy
+medication	Has the patient had multiple |medication| prescriptions	Easy
+medication	Is there history of use of |medication|	Easy
+medication	Has patient ever been prescribed |medication|	Easy
+medication	has the patient had |medication|	Easy
+medication	Is there a mention of of |medication| usage/prescription in the record	Easy
+medication	Is the patient currently or have they ever taken |medication|	Easy
+medication	Has this patient ever been on |medication|	Easy
+medication	Has the patient ever tried |medication|	Easy
+medication	Has this patient ever tried |medication|	Easy
+medication	Was the patient ever prescribed |medication|	Easy
+medication	What is her current dose of |medication|	Easy
+medication	What is the current dose of |medication|	Easy
+medication	What is the dosage of |medication|	Easy
+medication	How much |medication| does the patient take per day	Easy
+medication	What was the dosage prescribed of |medication|	Easy
+medication	MEDS RECORD	Easy
+medication	How often does the patient take |medication|	Easy
+medication	Has the patient ever had |treatment|	Easy
+medication	Has this patient ever been treated with |treatment|	Easy
+medication	has the patient used |treatment| in the past	Easy
+medication	Previous |treatment|	Easy
+medication	Has the patient had previous |treatment|	Easy
+medication	Has the patient ever been on |treatment|	Easy
+medication	Has a patient had |treatment|	Easy
+medication	Has the patient had |treatment| in the past	Easy
+medication	What does the patient take |medication| for	Hard
+medication	Why was the patient prescribed |medication|	Hard
+medication	Why does the patient take |medication|	Hard
+medication	What is the reason this patient is on |medication|	Hard
+medication	Why is the patient taking |medication|	Hard
+medication	Why was the patient on |treatment|	Hard
+medication	Why is the patient on |treatment|	Hard
+medication	Why was |medication| prescribed	Hard
+medication	Why is the patient prescribed |medication|	Hard
+medication	Why was |medication| originally prescribed	Hard
+medication	Why has the patient been prescribed |medication|	Hard
+medication	Has the patient ever taken |medication| for their |problem|	Hard
+medication	Has the patient taken any medications for |problem| management	Hard
+medication	What are the different medications that have been used on this patient for |problem|	Hard
+medication	Did the patient ever take any medication for her |problem| in the past	Hard
+medication	Has the patient taken medication for |problem|	Hard
+medication	What medications has this patient tried for |problem|	Hard
+medication	What treatments has patient been on for |problem| in the past	Hard
+medication	What medicines have previously been tried for |problem|	Hard
+medication	What is has been given for treatment of her |problem|	Hard
+medication	What medications has the patient been prescribed for |problem|	Hard
+medication	What medications has the patient ever tried for |problem| prevention	Hard
+medication	What types of medications have been tried for |problem| management	Hard
+medication	What medications, if any, has the patient tried for |problem| in the past	Hard
+medication	What medications has patient been on for |problem| in the past	Hard
+medication	What |problem| meds has vet tried in past	Hard
+medication	What medications have been previously used for prevention of |problem|	Hard
+medication	What medications did the patient take for |problem|	Hard
+medication	Was the patient ever given medication for |problem|	Hard
+medication	What medications if any has the patient tried for |problem| in the past	Hard
+medication	What |problem| medications have ever been prescribed for pt. in the VA or mentioned in the record	Hard
+medication	Was the patient on any medication for her |problem|	Hard
+medication	What treatments if any has the patient tried for |problem| in the past	Hard
+medication	What medications have been previously used for the treatment of |problem|	Hard
+medication	What medication did the patient take for |problem|	Hard
+medication	What medication has the patient take for |problem|	Hard
+medication	|problem| meds on in past	Hard
+medication	What was the indication for my patient's |treatment|	Hard
+medication	Did the patient receive |treatment| for |problem|	Hard
+medication	Was the patient ever given |treatment| for |problem|	Hard
+medication	Why did the patient have |treatment|	Hard
+medication	Why did the patient need |treatment|	Hard
+medication	When was |medication| discontinued	Hard
+medication	When was the last time that the patient received |medication|	Hard
+medication	When the the patient last receive |treatment|	Hard
+medication	What is the patient's |treatment| history	Hard
+medication	|treatment| history	Hard
+medication	|problem|	Hard
+medication	Has the patient ever had |problem|	Hard
+medication	Has the patient had previous |problem|	Hard
+medication	What is the dosage of the medication the patient was prescribed for |problem|	Hard
+relation	Does the patient currently have |problem|	Easy
+relation	Does the patient suffer from |problem|	Easy
+relation	Does the patient have |problem|	Easy
+relation	What is the patient's current |problem| status	Easy
+relation	Does |problem| exist	Easy
+relation	Does he have |problem|	Easy
+relation	Has the patient's |problem| resolved	Easy
+relation	Is the patient's |problem| well-controlled	Easy
+relation	What is the status of her |problem|	Easy
+relation	Is the patients |problem| controlled	Easy
+relation	Does pt. have |problem|	Easy
+relation	Does the person have |problem|	Easy
+relation	Does this patient have |problem|	Easy
+relation	Is the patient's |problem| well controlled	Easy
+relation	Does she have |problem|	Easy
+relation	What is the patient's |problem| status	Easy
+relation	What is the patients |problem| status	Easy
+relation	Does the patient have a current |problem|	Easy
+relation	Does the patient have any |problem|	Easy
+relation	Is there any mention of |problem| in the patient's record	Easy
+relation	Does this woman have a history of |problem|	Easy
+relation	has |problem| been considered in the past	Easy
+relation	Is there mention |problem| anywhere in the record	Easy
+relation	Does that patient have a history of |problem|	Easy
+relation	Has the patient ever gone into |problem|	Easy
+relation	Does the patient have a history of |problem|	Easy
+relation	Is there any history of |problem| in the medical record	Easy
+relation	|problem|	Hard
+relation	Is there a history of |problem|	Easy
+relation	Has the patient had previous |problem|	Easy
+relation	Does the patient had a history of |problem|	Easy
+relation	Has the patient had a previous |problem|	Easy
+relation	|problem| history	Easy
+relation	does this pt have a history of "|problem|"	Easy
+relation	Does the patient have any history of |problem|	Easy
+relation	Does she have a history of |problem|	Easy
+relation	Any mention of |problem|	Easy
+relation	Does the patient have any |problem| history	Easy
+relation	Has the patient ever had any |problem|	Easy
+relation	Does patient have a past medical history of |problem|	Easy
+relation	Any |problem| history	Easy
+relation	Any history of |problem|	Easy
+relation	Does the patient have any other history of |problem|	Easy
+relation	Is there a mention of |problem| in the record	Easy
+relation	Does the patient have a prior history of |problem|	Easy
+relation	Has she ever had |problem| before	Easy
+relation	Has the patient had |problem|	Easy
+relation	What is |problem| history	Easy
+relation	Has the patient ever had |problem|	Easy
+relation	Does the patient have a past history of |problem|	Easy
+relation	Has the patient experienced |problem| in the past	Easy
+relation	Has been the patient ever been considered for |problem|	Easy
+relation	Has this patient/employee ever been exposed to |problem|	Easy
+relation	Has the pt ever seen |problem| before	Easy
+relation	Can I search my patient's medical record for |problem| in the past	Easy
+relation	Has this patient had |problem| in the past	Easy
+relation	was the patient ever seen for |problem|	Easy
+relation	Does the patient has any past |problem|	Easy
+relation	History of |problem|	Easy
+relation	Does the patient have a history |problem|	Easy
+relation	Has the patient ever reported |problem|	Easy
+relation	Does this patient have a history of |problem|	Easy
+relation	Has there been any history of |problem|	Easy
+relation	Does the patient have any history of previous |problem|	Easy
+relation	Does pt have a history of |problem|	Easy
+relation	Has this patient ever reported |problem|	Easy
+relation	Has this patient ever had |problem|	Easy
+relation	Is there mention of |problem| anywhere in the record	Easy
+relation	Is there a mention of |problem| in the records	Easy
+relation	previous |problem| documented in the records	Easy
+relation	What were the results of the patient's last |test| for his |problem|	Hard
+relation	What lab results does he have that are pertinent to |problem| diagnosis	Hard
+relation	was the patient ever checked for |problem|	Hard
+relation	Has the patient been tested for |problem|	Hard
+relation	Has this patient ever been tested for |problem|	Hard
+relation	Has this patient been screened for |problem|	Hard
+relation	Has the patient ever been screened for |problem|	Hard
+relation	has this patient ever had testing for |problem|	Hard
+relation	Any prior |problem| testing	Hard
+relation	Has this patient been tested for |problem|	Hard
+relation	has this young, at risk woman patient had a screening for |problem|	Hard
+relation	Has the patient been screened for |problem|	Hard
+relation	has she been screened for a history of |problem|	Hard
+relation	Does he have any evidence of |problem| in |test|	Hard
+relation	Are there any |test| indicating |problem|	Hard
+relation	Has this patient ever tested positive for |problem|	Hard
+relation	Has the patient ever been positive for |problem|	Hard
+relation	Has the patient ever screened postive on |problem|	Hard
+relation	Is the patient positive for |problem|	Hard
+relation	Does the patient have any evidence of |problem|	Hard
+relation	has the patient had positive |test|	Hard
+relation	has the pt ever had a positive |test|	Hard
+relation	How was the diagnosis of |problem| made	Hard
+relation	How was the patient's |problem| diagnosed	Hard
+relation	has the patient had diagnostics for |problem|	Hard
+relation	What is basis of diagnosis for |problem| Like, what level/type of evaluation was conducted if any	Hard
+relation	How was |problem| diagnosed	Hard
+relation	What diagnosis was used for the patient's |problem|	Hard
+relation	How was |problem| treated	Hard
+relation	Was the patient ever treated for |problem|	Hard
+relation	How was |problem| managed	Hard
+relation	How was the patients |problem| managed	Hard
+relation	What interventions were done for the patient's |problem|	Hard
+relation	Was |problem| treated	Hard
+relation	What kind of treatments have been tried for her |problem|	Hard
+relation	What treatment has the patient had for his |problem|	Hard
+relation	has the pt ever had treatment of his |problem|	Hard
+relation	How was the patient's |problem| treated	Hard
+relation	were they ever treated for |problem|	Hard
+relation	What was done to correct the patient's |problem|	Hard
+relation	What methods has the patient tried to manage her |problem|	Hard
+relation	What treatments for |problem| has this patient tried	Hard
+relation	Has the patient ever received treatment for |problem|	Hard
+relation	Has the patient ever been treated for |problem|	Hard
+relation	Why is the patient on |treatment|	Hard
+relation	Why was the patient on |treatment|	Hard
+relation	What was the indication for my patient's |treatment|	Hard
+relation	Was the patient ever given |treatment| for |problem|	Hard
+relation	Did the patient receive |treatment| for |problem|	Hard
+relation	Why did the patient have |treatment|	Hard
+relation	Why did the patient need |treatment|	Hard
+relation	Has the patient had any |problem2| assossciated with |problem1|	Easy
+relation	When was the patient evaluated for |problem| and what are |test| results	Hard
+relation	|test| results to evaluate |problem|	Hard
+relation	Did the patient ever have |test| that evaluated |problem|	Hard
+relation	has the patient had |test| for |problem|	Hard
+relation	What work up has been done for the patient's |problem|	Hard
+relation	Was |problem| evaluated before	Hard
+relation	What tests have been ordered for evaluation of |problem| previously	Hard
+relation	What evaluation was done for this person's |problem|	Hard
+relation	Why did they patient get |test|	Hard
+relation	Why was |test| performed	Hard
+relation	Why did the patient have |test|	Hard
+relation	Why was |test| done on this patient	Hard
+relation	What was the indication for the most recent |test|	Hard
+relation	What happened when she was given |treatment|	Easy
+relation	What reaction does the patient have to |treatment|	Easy
+relation	What happened when the patient was given |treatment|	Hard
+relation	What happens when the patient receives |treatment|	Easy

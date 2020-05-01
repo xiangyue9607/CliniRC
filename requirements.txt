@@ -1,0 +1,15 @@
+numpy
+scikit-learn
+termcolor
+regex
+tqdm
+prettytable
+scipy
+nltk
+elasticsearch
+pexpect==4.2.1
+scispacy
+https://s3-us-west-2.amazonaws.com/ai2-s2-scispacy/releases/v0.2.4/en_core_sci_sm-0.2.4.tar.gz
+tensorflow-gpu  >= 1.11.0
+torch >= 1.0.0
+torchvision >= 0.2.1
