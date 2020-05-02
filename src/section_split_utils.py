@@ -1,41 +1,38 @@
-import re
-import pprint
 import json
-import pandas as pd
-import random
 import numpy as np
 import glob
 import re
-import os
 import copy
-import ast
 import uuid
+from preprocessing import prune_sentence
 
-with open('../src/ClarityNLP/nlp/algorithms/sec_tag/data/concepts_and_synonyms.txt', "r") as f:
+with open('data/concepts_and_synonyms.txt', "r") as f:
     sec_tag_labels = f.readlines()
 
 sec_tag_labels = sec_tag_labels[1:]
 headers = set([line.strip().split("\t")[-2].lower().strip().replace('_', ' ') for line in sec_tag_labels])
 
-
 def split_sections(lines):
     """
-    Header Cases
+
+    :param lines: Clinical note in the form of a list of strings. Each element is a line.
+    :return:
+        - sections: List of strings, each element is a section.
+        - section_nums: List of integer lists, each element is a list of lines belonging to each section.
 
     In order to split the clinical notes into sections, we notice that most sections begin with easily identifiable headers.
     To detect these headers we use a combination of heuristics such as whether the line contains colons, all uppercase formatting or
     phrases found in a list of clinical headers taken from SecTag {Denny et al. 2008}.
 
-    1)
-    Match the header regex AND
-        (Upper AND < 4) OR Header Name OR Nothing after ':'
+    Conditions for Header Detection
+    1) (Line matches with header regex) AND
+       (Group 1 of regex is (Upper AND shorter than 4) OR in the header list OR there is nothing in this line following ':')
 
-    2)
-    Word segment in line (matches alpha) AND
-    First word segment is short AND
-    More than one line in section AND
-    Last line ends in period AND
-        (Header Name OR Upper)
+    2) (Line matches alpha regex) AND
+       (first word segment is short) AND
+       (more than one line in section) AND
+       (last line ends in period) AND
+       (Group 1 is (in header OR Upper)
     """
 
     # Regex (Non Letters) (Letter without ':') (Post Colon)
@@ -89,6 +86,7 @@ def split_sections(lines):
                     if upper or in_headers:
                         is_header = True
 
+        #Add previous section if it exists and we encounter a header
         if is_header and section != []:
             sections.append(section)
             section_nums.append(lines_in_section)
@@ -104,20 +102,15 @@ def split_sections(lines):
 
     return sections, section_nums
 
-# %%
+def load_emrqa_datasets(data_dir="../data/datasets/*json"):
+    """
 
-dataset_names = ["../data/data*"]
-datasets = {}
+    :return: dictionary from filename to decoded json objects in data directory
+    """
 
-for name in dataset_names:
-    print(name)
+    datasets = {}
 
-    qa_pairs = {}
-    mimic_docs = 0
-    contexts = []
-    qa_list = []
-
-    files = glob.glob(name)
+    files = glob.glob(data_dir)
 
     for file in files:
         with open(file, "r") as f:
@@ -127,10 +120,7 @@ for name in dataset_names:
 
         datasets[file] = result
 
-f = datasets['../data/data.json']
-
-
-# %%
+    return datasets
 
 def flip_section_list(section_nums):
     line_to_section = {}
@@ -143,161 +133,138 @@ def flip_section_list(section_nums):
     return line_to_section
 
 
-# %%
+def group_answers_by_section(qa, sections, section_nums, line_to_section, orig_num_answers, new_num_answers, errors):
+    new_answers = []
+    answers = qa['answers']
 
-errors = 0
-orig_num_answers = 0
-new_num_answers = 0
+    # Group answers by section number for one qa
+    section_num_to_answers = {}
 
-emrqa_datasets = {}
+    for answer in answers:
+        orig_num_answers += 1
 
-for task in f['data']:
+        evidence_lines = answer['evidence_start']
+        answer_texts = answer['text']
+        evidences = answer['evidence']
 
-    title = task['title']
+        if isinstance(evidence_lines, int):
+            evidence_lines = [evidence_lines]
+            answer_texts = [answer_texts]
+            evidences = [evidences]
 
-    if title in ['medication', 'relations']:
+        for evidence_line, evidence, answer_text in zip(evidence_lines, evidences, answer_texts):
+            new_answer = copy.deepcopy(answer)
+            new_num_answers += 1
 
-        reports = task['paragraphs']
-        documents = []
+            section_num = line_to_section[evidence_line - 1]
 
-        for report in reports:
+            first_section_line = section_nums[section_num][0]
+            new_evidence_line = evidence_line - first_section_line
 
-            note_id = report['note_id']
-            text_lines = report['context']
-            qas = report['qas']
+            new_answer['evidence_start'] = new_evidence_line
+            new_answer['answer_start'][0] = new_evidence_line
+            new_answer['evidence'] = evidence
+            new_answer['text'] = answer_text
+            new_answer['answer_entity_type'] = 'single'
 
-            new_report = {"title": note_id}
-            new_paragraphs = []
+            section = sections[section_num]
 
-            sections, section_nums = split_sections(text_lines)
-            line_to_section = flip_section_list(section_nums)
+            if section_num in section_num_to_answers:
+                new_answers = section_num_to_answers[section_num]
+            else:
+                new_answers = []
 
-            section_num_to_qas = {}
+            section_text = ''.join(section)
 
-            for qa in qas:
-                answers = qa['answers']
+            if evidence in section_text:
+                new_answers.append(new_answer)
+                section_num_to_answers[section_num] = new_answers
+            else:
+                errors += 1
 
-                # Group answers by section number for one qa
-                section_num_to_answers = {}
+    return section_num_to_answers, orig_num_answers, new_num_answers, errors
 
-                for answer in answers:
-                    orig_num_answers += 1
+def create_split_docs_emrqa(emrqa):
+    """
 
-                    evidence_lines = answer['evidence_start']
-                    answer_starts = answer['answer_start']
+    :param emrqa: Decoded emrQA dataset json
+    :return: json dataset with the same structure as the emrQA but linking each question with a section in a document
+    instead of the whole report.
 
-                    answer_texts = answer['text']
-                    evidences = answer['evidence']
+    """
 
-                    if isinstance(evidence_lines, int):
-                        evidence_lines = [evidence_lines]
-                        answer_starts = [answer_starts]
-                        answer_texts = [answer_texts]
-                        evidences = [evidences]
+    errors = 0
+    orig_num_answers = 0
+    new_num_answers = 0
 
-                    for evidence_line, evidence, answer_text in zip(evidence_lines, evidences, answer_texts):
-                        new_answer = copy.deepcopy(answer)
-                        new_num_answers += 1
+    emrqa_datasets = {}
 
-                        section_num = line_to_section[evidence_line - 1]
+    for task in emrqa['data']:
 
-                        first_section_line = section_nums[section_num][0]
-                        new_evidence_line = evidence_line - first_section_line
+        title = task['title']
 
-                        new_answer['evidence_start'] = new_evidence_line
-                        new_answer['answer_start'][0] = new_evidence_line
-                        new_answer['evidence'] = evidence
-                        new_answer['text'] = answer_text
-                        new_answer['answer_entity_type'] = 'single'
+        #Splitting only medication and relations datasets due for evaluation
+        if title in ['medication', 'relations']:
 
-                        section = sections[section_num]
+            reports = task['paragraphs']
+            documents = []
 
-                        if section_num in section_num_to_answers:
-                            new_answers = section_num_to_answers[section_num]
+            #Looping through all medical reports
+            for report in reports:
+
+                note_id = report['note_id']
+                text_lines = report['context']
+                qas = report['qas']
+
+                new_report = {"title": note_id}
+                new_paragraphs = []
+
+                #Splitting Sections
+                sections, section_nums = split_sections(text_lines)
+
+                #Reversing the map from lines to section numbers
+                line_to_section = flip_section_list(section_nums)
+
+
+                section_num_to_qas = {}
+
+                #Looping through all questions for this report, each question might have multiple answers
+                for qa in qas:
+
+                    section_num_to_answers, orig_num_answers, new_num_answers, errors  = group_answers_by_section(qa, sections, section_nums, line_to_section,
+                                                                      orig_num_answers, new_num_answers, errors)
+
+                    # Aggregate qas with equivalent section num
+                    for section_num in section_num_to_answers.keys():
+                        new_answers = section_num_to_answers[section_num]
+
+                        new_qa = copy.deepcopy(qa)
+                        new_qa['answers'] = new_answers
+
+                        if section_num in section_num_to_qas:
+                            new_qas = section_num_to_qas[section_num]
                         else:
-                            new_answers = []
+                            new_qas = []
 
-                        section_text = ''.join(section)
+                        new_qas.append(new_qa)
+                        section_num_to_qas[section_num] = new_qas
 
-                        evidence_in_section = section[new_evidence_line - 1]
+                for section_num in section_num_to_qas.keys():
+                    section = sections[section_num]
 
-                        if evidence in section_text:
-                            new_answers.append(new_answer)
-                            section_num_to_answers[section_num] = new_answers
-                        else:
-                            errors += 1
+                    paragraph = {"note_id": note_id + "_" + str(section_num),
+                                 "context": section,
+                                 "qas": section_num_to_qas[section_num]}
+                    new_paragraphs.append(paragraph)
 
-                # Add qas with new set of answers for each section num
-                for section_num in section_num_to_answers.keys():
-                    new_answers = section_num_to_answers[section_num]
+                new_report['paragraphs'] = new_paragraphs
 
-                    new_qa = copy.deepcopy(qa)
-                    new_qa['answers'] = new_answers
+                documents.append(new_report)
 
-                    if section_num in section_num_to_qas:
-                        new_qas = section_num_to_qas[section_num]
-                    else:
-                        new_qas = []
+            print("Saving {}".format(title))
+            emrqa_datasets[title] = documents
 
-                    new_qas.append(new_qa)
-                    section_num_to_qas[section_num] = new_qas
-
-            for section_num in section_num_to_qas.keys():
-                section = sections[section_num]
-
-                paragraph = {"note_id": note_id + "_" + str(section_num),
-                             "context": section,
-                             "qas": section_num_to_qas[section_num]}
-                new_paragraphs.append(paragraph)
-
-            new_report['paragraphs'] = new_paragraphs
-
-            documents.append(new_report)
-
-        print("Saving {}".format(title))
-        emrqa_datasets[title] = documents
-
-# %%
-
-temp_emrqa = copy.deepcopy(emrqa_datasets)
-
-# %%
-
-emrqa_datasets = copy.deepcopy(temp_emrqa)
-
-# %%
-
-errors, orig_num_answers, new_num_answers
-
-# %%
-
-len(emrqa_datasets['medication']), len(emrqa_datasets['relations'])
-
-
-# %% md
-
-## Making SQUAD JSON and Cleaning QA's
-
-# %%
-
-def prune_sentence(sent):
-    sent = " ".join(sent.split())
-    # replace html special tokens
-    sent = sent.replace("_", " ")
-    sent = sent.replace("&lt;", "<")
-    sent = sent.replace("&gt;", ">")
-    sent = sent.replace("&amp;", "&")
-    sent = sent.replace("&quot;", "\"")
-    sent = sent.replace("&nbsp;", " ")
-    sent = sent.replace("&apos;", "\'")
-    sent = sent.replace("_", "")
-    sent = sent.replace("\"", "")
-    # remove whitespaces before punctuations
-    sent = re.sub(r'\s([?.!\',)"](?:\s|$))', r'\1', sent)
-    # remove multiple punctuations
-    sent = re.sub(r'[?.!,]+(?=[?.!,])', '', sent)
-    sent = " ".join(sent.split())
-    return sent
+    return emrqa_datasets, orig_num_answers, new_num_answers, errors
 
 
 def locate_answer_start(evidence, context):
@@ -310,8 +277,8 @@ def locate_answer_start(evidence, context):
         char_pos = context.find(temp_evidence)
         final_evidence = temp_evidence
         temp_evidence = ' '.join(temp_evidence.split()[:-1])
-    return char_pos, final_evidence
 
+    return char_pos, final_evidence
 
 def combine_answer_lines(answers):
     line_numbers = []
@@ -343,136 +310,122 @@ def combine_answer_lines(answers):
 
     return combined_answers
 
+def transform_emrqa_to_squad_format(emrqa_format_dataset):
 
-# %%
+    answers_checked = 0
+    long_answers = 0
 
-answers_checked = 0
-longer_than = 0
+    squad_format_dataset = {}
 
-long_answers = 0
+    for title in emrqa_format_dataset.keys():
 
-new_emrqa = {}
+        records = emrqa_format_dataset[title]
+        new_records = []
 
-for title in emrqa_datasets.keys():
+        for record in records:
 
-    records = emrqa_datasets[title]
-    new_records = []
+            record_id = record['title']
+            sections = record['paragraphs']
 
-    for record in records:
+            new_record = {'title': record_id}
 
-        record_id = record['title']
-        sections = record['paragraphs']
+            new_sections = []
+            context_set = set()
 
-        new_record = {'title': record_id}
+            for section in sections:
 
-        new_sections = []
-        context_set = set()
+                text_list = section['context']
 
-        for section in sections:
-            new_section = {}
+                context = " ".join((" ".join(text_list).split()))
+                context = prune_sentence(context)
 
-            text_list = section['context']
+                qas = section['qas']
+                new_qas = []
 
-            context = " ".join((" ".join(text_list).split()))
-            context = prune_sentence(context)
+                for qa in qas:
+                    questions = qa['question']
+                    answers = qa['answers']
 
-            qas = section['qas']
-            new_qas = []
+                    new_answers = []
 
-            for qa in qas:
-                questions = qa['question']
-                answers = qa['answers']
+                    if len(answers) > 1:
+                        answers = combine_answer_lines(answers)
 
-                new_answers = []
+                    # Clean Answers and Check that they are in the context
+                    for answer in answers:
+                        evidence = answer['evidence']
+                        evidence = prune_sentence(evidence)
 
-                if len(answers) > 1:
-                    answers = combine_answer_lines(answers)
+                        evidence_length = len(evidence.split())
 
-                # Clean Answers and Check that they are in the context
-                for answer in answers:
-                    evidence = answer['evidence']
-                    evidence = prune_sentence(evidence)
+                        if len(evidence.strip()) > 0 and evidence_length < 20:
+                            answer_start, evidence = locate_answer_start(evidence, context)
 
-                    evidence_length = len(evidence.split())
+                            new_answers.append({'answer_start': answer_start, 'text': evidence})
 
-                    if len(evidence.strip()) > 0 and evidence_length < 20:
-                        answer_start, evidence = locate_answer_start(evidence, context)
+                            assert evidence in context
 
-                        new_answers.append({'answer_start': answer_start, 'text': evidence})
+                            answers_checked += 1
+                        else:
+                            long_answers += 1
 
-                        assert evidence in context
+                    # Add new qa pair for each question paraphrase
+                    for question in questions:
 
-                        answers_checked += 1
-                    else:
-                        long_answers += 1
+                        # If all answers were too long don't append question
+                        if len(new_answers) > 0:
+                            new_qas.append({'question': question, 'id': str(uuid.uuid1().hex), 'answers': new_answers})
 
-                # Add new qa pair for each question paraphrase
-                for question in questions:
+                # If all questions in section had longer than acceptable answers
+                if len(new_qas) > 0:
+                    context_set.add(section['note_id'])
+                    new_sections.append({'qas': new_qas, 'context': context})
+                # else:
+                #     print("Lost Section")
 
-                    # If answers were too long don't append question
-                    if len(new_answers) > 0:
-                        new_qas.append({'question': question, 'id': str(uuid.uuid1().hex), 'answers': new_answers})
+            assert len(context_set) == len(new_sections)
 
-            # If all questions in section had longer than acceptable answers
-            if len(new_qas) > 0:
-                context_set.add(section['note_id'])
-                new_sections.append({'qas': new_qas, 'context': context})
-            else:
-                print("Lost Section")
+            # if all sections in record only had longer than accetable answers
+            if len(new_sections) > 0:
+                new_record['paragraphs'] = new_sections
+                new_records.append(new_record)
+            # else:
+            #     print("Lost Whole record")
 
-        assert len(context_set) == len(new_sections)
+        squad_format_dataset[title] = new_records
 
-        # if all sections in record only had longer than accetable answers
-        if len(new_sections) > 0:
-            new_record['paragraphs'] = new_sections
-            new_records.append(new_record)
-        else:
-            print("Lost Whole record")
+    return squad_format_dataset, answers_checked, long_answers
 
-    new_emrqa[title] = new_records
+def count_squad_format_qas_and_contexts(noheader_squad_dataset):
 
-print(long_answers)
+    num_qas = {}
+    num_contexts = {}
 
-# %%
+    for title in noheader_squad_dataset.keys():
 
-num_qas = {}
-num_contexts = {}
+        num_qa = 0
+        num_context = 0
 
-for title in new_emrqa.keys():
+        records = noheader_squad_dataset[title]
 
-    num_qa = 0
-    num_context = 0
+        for record in records:
+            sections = record['paragraphs']
+            num_context += 1
+            for section in sections:
+                qas = section['qas']
 
-    records = new_emrqa[title]
+                for qa in qas:
+                    num_qa += 1
 
-    for record in records:
-        sections = record['paragraphs']
-        num_context += 1
-        for section in sections:
-            qas = section['qas']
+        num_qas[title] = num_qa
+        num_contexts[title] = num_context
 
-            for qa in qas:
-                num_qa += 1
+    return num_qas, num_contexts
 
-    num_qas[title] = num_qa
-    num_contexts[title] = num_context
-
-print(num_qas)
-print(num_contexts)
-
-
-# %%
-
-def add_header_and_save(emrqa_datasets):
+def add_header_and_save(emrqa_datasets, directory):
     for name in emrqa_datasets.keys():
         emrqa_datasets[name] = {'version': '1', 'data': emrqa_datasets[name]}
 
-        json.dump(emrqa_datasets[name], open('../data/{}.json'.format(name), 'w'))
+        json.dump(emrqa_datasets[name], open(directory + '{}.json'.format(name), 'w'))
 
     return emrqa_datasets
-
-
-# %%
-
-new_emrqa = add_header_and_save(new_emrqa)
-new_emrqa['relations']['data'][0]
