@@ -2,7 +2,7 @@
 
 ## Introduction
 This repository provides code for the analysis of Clinical Reading Comprehension task in the ACL2020 paper:
-[Clinical Reading Comprehension: A Thorough Analysis of the emrQA Dataset](link)
+[Clinical Reading Comprehension: A Thorough Analysis of the emrQA Dataset](https://arxiv.org/abs/2005.00574)
 
 ```bib
 @inproceedings{yue2020CliniRC,
