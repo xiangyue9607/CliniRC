@@ -7,7 +7,7 @@ This repository provides code for the analysis of Clinical Reading Comprehension
 ```bib
 @inproceedings{yue2020CliniRC,
  title={Clinical Reading Comprehension: A Thorough Analysis of the emrQA Dataset},
- author={Xiang Yue, Bernal Jimenez Gutierrez and Huan Sun},
+ author={Xiang Yue and Bernal Jimenez Gutierrez and Huan Sun},
  booktitle={ACL},
  year={2020}
 }
